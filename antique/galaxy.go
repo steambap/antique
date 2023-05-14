@@ -10,11 +10,21 @@ type Galaxy struct {
 	Points []gg.Point
 	camX   float64
 	camY   float64
+	img    *ebiten.Image
 }
 
 func (g *Galaxy) Init() {
-	g.Points = generator.NewGalaxy(0.5, 4)
+	g.Points = generator.NewGalaxy()
+	dc := gg.NewContext(500, 500)
+	for _, point := range g.Points {
+		dc.Push()
+		dc.DrawPoint(point.X*500, point.Y*500, 1)
+		dc.SetHexColor("#ff7f22")
+		dc.Fill()
+		dc.Pop()
+	}
 
+	g.img = ebiten.NewImageFromImage(dc.Image())
 }
 
 func (g *Galaxy) Update() {
@@ -35,16 +45,7 @@ func (g *Galaxy) Update() {
 }
 
 func (g *Galaxy) Draw(screen *ebiten.Image) {
-	dc := gg.NewContext(640, 480)
-	for _, point := range g.Points {
-		dc.Push()
-		dc.DrawPoint(g.camX+point.X*500, g.camY+point.Y*500, 1)
-		dc.SetHexColor("#ff7f22")
-		dc.Fill()
-		dc.Pop()
-	}
-
-	img := ebiten.NewImageFromImage(dc.Image())
 	op := &ebiten.DrawImageOptions{}
-	screen.DrawImage(img, op)
+	op.GeoM.Translate(g.camX, g.camY)
+	screen.DrawImage(g.img, op)
 }
